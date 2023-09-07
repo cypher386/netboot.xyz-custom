@@ -1,12 +1,46 @@
 #!ipxe
 ###
-### netboot.xyz-custom menu
+### netboot.xyz-custom menu example
 ###
 
-:start
-echo Hello world!
-sleep 10
+:custom
+clear custom_choice
+menu This is a Test Menu
+item --gap This is the first sub menu
+item option_one ${space} Loading a kernel and initrd
+item option_two ${space} Loading an ISO
+item --gap This is a second sub menu
+item option_three ${space} Loads another custom sub menu
+item option_four ${space} This is option four
+choose custom_choice || goto custom_exit
+echo ${cls}
+goto ${custom_choice}
 goto custom_exit
 
-:custom_exit
-exit 0
+:option_one
+debian-12-live-kernel:
+    path: /debian-core-12/releases/download/12.1.0-825b8b20/
+    files:
+    - initrd
+    - vmlinuz 
+    os: debian
+    version: '12'
+kernel http://path.to/vmlinuz
+initrd http://path.to/initrd
+imgargs console=ttyS1,1152000
+boot || goto custom_exit
+
+:option_two
+ debian-12-default-squash:
+    path: /debian-squash/releases/download/12.1.0-07c46b7d/
+    files:
+    - filesystem.squashfs
+    os: debian
+    version: '12'
+    flavor: core
+    kernel: debian-12-live-kernel 
+    imgargs console=ttyS1,1152000
+boot || goto custom_exit
+
+chain utils.ipxe
+exit
